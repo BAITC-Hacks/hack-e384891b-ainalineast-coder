@@ -6,3 +6,6 @@ work/
 exports/
 validation/*-analysis.json
 _ui_patch.py
+
+site/
+dist/

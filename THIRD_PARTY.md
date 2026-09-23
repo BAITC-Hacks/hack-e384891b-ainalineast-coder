@@ -24,3 +24,6 @@ Ollama и веса моделей не распространяются с пр�
 В комплект добавлен оригинальный Roboto variable из google/fonts, Roboto Project Authors, SIL Open Font License 1.1. Файл лицензии: assets/Roboto-OFL.txt. Источник: https://github.com/google/fonts/tree/main/ofl/roboto . Корпоративная палитра сверена с официальным telecom.kz; логотип компании не копируется.
 
 Для PDF из Roboto variable получены статические начертания Regular и Bold (assets/Roboto-Regular.ttf, assets/Roboto-Bold.ttf), распространяемые по той же SIL OFL 1.1. Генератор XLSX написан для проекта на стандартной библиотеке Python; внешняя библиотека генерации таблиц не требуется.
+
+## Браузерная версия
+Pyodide 0.27.7 (Mozilla Public License 2.0, https://github.com/pyodide/pyodide/blob/0.27.7/LICENSE) загружается с официального дистрибутива на jsDelivr для исполнения существующего Python-кода в Web Worker. Источник и сведения о лицензировании: https://github.com/pyodide/pyodide/tree/0.27.7 . Python-пакеты pypdf, python-docx и ReportLab используются в указанных в requirements.txt версиях; lxml и Pillow загружаются из совместимого дистрибутива Pyodide. Пользовательские документы не отправляются на CDN или PyPI.

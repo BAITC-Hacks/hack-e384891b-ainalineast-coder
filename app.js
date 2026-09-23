@@ -18,7 +18,7 @@ function sourceLabel(clause){return (clause.side==='before'?'Документ 1'
 
 let state={before:[],after:[],analysis:null,view:'documents',filter:'all',busy:false,label:'',warnings:[],health:{},decisions:{},notes:{}};
 function message(text,error=false,busy=false){$('#message').innerHTML=text?'<div class="message '+(error?'error':'')+'">'+esc(text)+(busy?'<div class="loading-line"></div>':'')+'</div>':''}
-async function api(url,body){const res=await fetch(url,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});const data=await res.json();if(!res.ok)throw Error(data.error||'Не удалось выполнить запрос');return data}
+async function api(url,body){if(window.versaBrowserApi)return window.versaBrowserApi(url,body);const res=await fetch(url,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});const data=await res.json();if(!res.ok)throw Error(data.error||'Не удалось выполнить запрос');return data}
 
 function updateFlow(){
   const ready=state.before.length>0&&state.after.length>0;
@@ -96,7 +96,7 @@ function fullReport(){
   return '<!doctype html><html lang="ru"><meta charset="utf-8"><title>Versa — заключение по итогам сравнения</title><style>'+exportStyle+legalReportStyle+'</style><body>'+conclusionHTML(false)+'<section class="legal-section legal-appendix"><h2>Приложение. Полная сравнительная таблица</h2><p>Все '+rows().length+' сопоставленных позиций, включая положения, оставленные без изменений.</p>'+table.slice(tableStart,tableEnd)+'</section></body></html>';
 }
 function exportConclusion(){if(state.analysis)download(fullReport(),'html')}
-async function download(content,extension){if(!state.analysis)return;try{const result=await api('/api/export',{content,extension});const link=document.createElement('a');link.href=result.href;link.download='Versa-сравнение.'+extension;document.body.appendChild(link);link.click();link.remove();message('Файл сохранён: '+result.path)}catch(e){message(e.message,true)}}
+async function download(content,extension){if(!state.analysis)return;try{const result=await api('/api/export',{content,extension});const link=document.createElement('a');link.href=result.href;link.download='Versa-сравнение.'+extension;document.body.appendChild(link);link.click();link.remove();message('Скачивание началось: '+(result.name||'Versa-сравнение.'+extension))}catch(e){message(e.message,true)}}
 function exportHTML(){if(state.analysis)download(tableReport(),'html')}
 function exportCSV(){if(!state.analysis)return;const cell=v=>{let s=String(v??'');if(/^(\s*[=+@-]|[\t\r])/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'};const result=[[docTitle('before'),docTitle('after'),'Содержание изменений и дополнений']];const clause=(value,side)=>value?((names(side).length>1?displayName(value.document)+'\n':'')+citationLabel(value)+'\n'+value.text):'Данный пункт в документе отсутствует.';for(const r of rows())result.push([clause(r.before,'before'),clause(r.after,'after'),(statusLabels[r.status]||r.status)+'. '+r.explanation]);download('\ufeff'+result.map(r=>r.map(cell).join(';')).join('\r\n'),'csv')}
 document.addEventListener('click',event=>{const view=event.target.closest('[data-view]');if(view)setView(view.dataset.view);const filter=event.target.closest('[data-filter]');if(filter){state.filter=filter.dataset.filter;$$('[data-filter]').forEach(el=>el.classList.toggle('active',el===filter));renderTable();$('.comparison-scroll').scrollTop=0}const remove=event.target.closest('[data-remove-side]');if(remove&&!state.busy){state[remove.dataset.removeSide].splice(Number(remove.dataset.index),1);invalidate();renderFiles()}const item=event.target.closest('[data-finding]');if(item){const finding=state.analysis?.findings.find(f=>f.id===item.dataset.finding);if(finding)openFinding(finding)}const decision=event.target.closest('[data-decision]');if(decision){state.decisions[decision.dataset.id]=decision.dataset.decision;state.notes[decision.dataset.id]=$('#review-note').value;$('#finding-dialog').close();renderReport()}});
@@ -113,7 +113,7 @@ async function exportBinary(extension){
   if(!state.analysis||state.busy||state.exportBusy)return;
   state.exportBusy=true;$$('[data-export-format]').forEach(b=>b.disabled=true);
   $('#export-progress').textContent='Готовим '+extension.toUpperCase()+'.';message('Готовим '+extension.toUpperCase()+' со всеми пунктами.',false,true);
-  try{const result=await api('/api/export-document',{extension,analysis:{comparison:state.analysis.comparison}});saveLink(result,extension);message('Файл сохранён: '+result.path);$('#export-progress').textContent=extension.toUpperCase()+' сохранён';}
+  try{const result=await api('/api/export-document',{extension,analysis:{comparison:state.analysis.comparison}});saveLink(result,extension);message('Скачивание началось: '+(result.name||'Versa-сравнение.'+extension));$('#export-progress').textContent=extension.toUpperCase()+' сохранён';}
   catch(e){message(e.message,true);$('#export-progress').textContent=e.message;}
   finally{state.exportBusy=false;$$('[data-export-format]').forEach(b=>b.disabled=false);}
 }

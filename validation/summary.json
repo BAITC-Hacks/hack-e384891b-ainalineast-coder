@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-23T12:26:08.392360+00:00",
+  "generatedAt": "2026-09-23T12:43:17.951013+00:00",
   "python": "3.12.14",
   "platform": "Windows",
   "testsPassed": true,
   "llmLiveTested": false,
   "cases": {
     "audit": {
-      "elapsedMs": 2186,
+      "elapsedMs": 2266,
       "stats": {
         "preserved": 317,
         "modified": 32,
@@ -21,7 +21,7 @@
         "duplicates": 4,
         "conflicts": 1,
         "changes": 3,
-        "durationMs": 2186
+        "durationMs": 2265
       },
       "evidenceReferencesValid": true,
       "comparisonStats": {
@@ -34,7 +34,7 @@
       }
     },
     "control": {
-      "elapsedMs": 6,
+      "elapsedMs": 7,
       "stats": {
         "preserved": 2,
         "modified": 0,
