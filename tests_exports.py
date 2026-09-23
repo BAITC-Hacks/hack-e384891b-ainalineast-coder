@@ -31,7 +31,7 @@ class ExportTests(unittest.TestCase):
         with zipfile.ZipFile(io.BytesIO(export_xlsx(a))) as z:sheet=ET.fromstring(z.read("xl/worksheets/sheet1.xml"))
         data=sheet.findall(".//s:sheetData/s:row",ns)[3:]
         restored="".join("".join(c.itertext()) for row in data for c in row.findall("s:c",ns) if c.attrib["r"].startswith("A"))
-        self.assertEqual(restored,"1\n"+value)
+        self.assertEqual(restored,"пункт 1\n"+value)
         self.assertTrue(all(float(row.attrib["ht"])<=409 for row in data))
         self.assertTrue(all(sum(p["text"].count("\n") for p in chunk)<=18 for chunk in _chunks([{"text":value,"kind":"equal"}])))
     def test_xlsx_does_not_create_formulas(self):
@@ -59,7 +59,7 @@ class ExportTests(unittest.TestCase):
         from pypdf import PdfReader
         reader=PdfReader(io.BytesIO(export_document(sample(),"pdf")))
         text="".join(p.extract_text() for p in reader.pages)
-        self.assertIn("может",text);self.assertIn(MISSING,text);self.assertIn("Редакция 1.md",text)
+        self.assertIn("может",text);self.assertIn(MISSING,text);self.assertIn("Редакция 1",text);self.assertNotIn("Редакция 1.md",text)
         fonts={str(obj.get_object().get("/BaseFont","")) for page in reader.pages for obj in page["/Resources"]["/Font"].values()}
         self.assertTrue(any("Roboto-Bold" in font for font in fonts),fonts)
         self.assertTrue(any("Roboto-Regular" in font for font in fonts),fonts)

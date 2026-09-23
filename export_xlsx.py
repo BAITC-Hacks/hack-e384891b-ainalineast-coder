@@ -4,9 +4,10 @@ import math
 import re
 from xml.sax.saxutils import escape
 from zipfile import ZipFile, ZIP_DEFLATED
+from legal_text import display_name, citation
 
 MISSING="Данный пункт в документе отсутствует."
-LABELS={"unchanged":"Без изменений","changed":"Изменён","added":"Добавлен","removed":"Удалён","moved":"Перенумерован / перенесён"}
+LABELS={"unchanged":"Положение сохранено без изменений","changed":"Положение изменено","added":"Включено новое положение","removed":"Положение исключено","moved":"Изменена нумерация или место положения"}
 NS="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 
 def _xml(value):
@@ -14,8 +15,8 @@ def _xml(value):
 
 def _segments(clause,parts,multi):
     if clause is None:return [{"text":MISSING,"kind":"equal"}]
-    prefix=(str(clause.get("document",""))+"\n") if multi else ""
-    prefix+=str(clause.get("ref",""))+"\n"
+    prefix=(display_name(clause.get("document",""))+"\n") if multi else ""
+    prefix+=citation(clause)+"\n"
     return [{"text":prefix,"kind":"equal"}]+(parts or [{"text":clause["text"],"kind":"equal"}])
 
 def _chunks(parts,limit=900,width=44):
@@ -59,12 +60,12 @@ def _cell(address,parts,style=3):
 
 def export_xlsx(analysis):
     data=analysis["comparison"]; docs=data["documents"]
-    names={s:" + ".join(d["name"] for d in docs[s]) for s in ("before","after")}
+    names={s:"\n".join(display_name(d["name"]) for d in docs[s]) for s in ("before","after")}
     rows=[]
     def plain(text):return [{"text":str(text),"kind":"equal"}]
     rows.append('<row r="1" ht="34" customHeight="1">'+_cell("A1",plain("Versa — сравнительная таблица"),0)+'</row>')
     rows.append('<row r="2" ht="35" customHeight="1">'+_cell("A2",plain("Красный жирный — дополнение; красный зачёркнутый — удаление. Длинные пункты продолжаются следующей строкой."),1)+'</row>')
-    header=[plain("Документ 1\n"+names["before"]),plain("Документ 2\n"+names["after"]),plain("Что изменилось")]
+    header=[plain("Документ 1\n"+names["before"]),plain("Документ 2\n"+names["after"]),plain("Содержание изменений и дополнений")]
     rows.append('<row r="3" ht="'+str(max(72,*[_height(p,55) for p in header]))+'" customHeight="1">'+"".join(_cell(c+"3",p,2) for c,p in zip("ABC",header))+'</row>')
     rn=4
     for row in data["rows"]:

@@ -3,6 +3,7 @@ from collections import defaultdict
 import difflib
 import hashlib
 import re
+from legal_text import display_name, citation, add_citations
 
 def _display(text):
     return re.sub(r'\\([.\-])',r'\1',text).replace('**','').strip()
@@ -11,7 +12,7 @@ def _key(text):
     return re.sub(r'\s+',' ',text).strip().casefold()
 
 def parse_full_document(item,side,index):
-    raw=item['text']; name=str(item.get('name') or f'{side}-{index+1}.txt')[:250]
+    raw=item['text']; name=display_name(item.get('name') or f'Документ {index+1}')
     docid=f'{side}-{index+1}-{hashlib.sha256((name+raw).encode()).hexdigest()[:8]}'
     clauses=[]; parent=''; section=''; buffer=[]; start=1; lists=defaultdict(int)
     def flush():
@@ -39,11 +40,12 @@ def parse_full_document(item,side,index):
         if not line: flush(); continue
         chunks=re.split(r'(?<=[.;!?])\s+(?=\d{1,2}(?:\.\d{1,3}){1,3}\.\s*[А-ЯA-ZЁ])',line)
         for chunk in chunks:
-            marked=bool(re.match(r'^(?:#{1,6}\s|\d+(?:\.\d+)*[.)]?\s|[а-яa-z][.)]\s|[-–•]\s)',chunk,re.I))
+            marked=bool(re.match(r'^(?:(?:раздел|глава|статья)\s+|#{1,6}\s|\d+(?:\.\d+)*[.)]?\s|[а-яa-z][.)]\s|[-–•]\s)',chunk,re.I))
             if marked or raw_line.strip().startswith('**'): flush()
             if not buffer: start=lineno
             buffer.append(chunk)
     flush()
+    add_citations(clauses,raw)
     return dict(id=docid,name=name,clauses=clauses)
 
 def word_diff(before,after):
@@ -96,28 +98,64 @@ def _match_clauses(left,right):
     return matches
 
 def _snippet(parts,kind):
-    chunks=[re.sub(r'\s+',' ',p['text']).strip() for p in parts if p['kind']==kind and p['text'].strip()]
-    return '; '.join('«'+s[:120]+('…' if len(s)>120 else '')+'»' for s in chunks[:3])
+    chunks=[p['text'].strip() for p in parts if p['kind']==kind and p['text'].strip()]
+    return '; '.join('«'+text+'»' for text in chunks)
+
+def _source(clause):
+    return citation(clause) + ' документа «' + display_name(clause['document']) + '»'
+
+def _changes(before,after):
+    old=re.findall(r'\w+|\s+|[^\w\s]',before)
+    new=re.findall(r'\w+|\s+|[^\w\s]',after)
+    return [dict(type=tag,before=''.join(old[i:j]),after=''.join(new[k:l]))
+            for tag,i,j,k,l in difflib.SequenceMatcher(None,old,new,autojunk=False).get_opcodes()
+            if tag!='equal']
 
 def _row(a,b):
     bp,ap=word_diff(a['text'] if a else '',b['text'] if b else '')
-    if a is None:status='added'; explanation='Добавлен пункт: в документе 1 соответствие не найдено.'
-    elif b is None:status='removed'; explanation='Пункт отсутствует в документе 2: соответствие не найдено.'
+    changes=_changes(a['text'] if a else '',b['text'] if b else '')
+    if a is None:
+        status='added'
+        explanation=('Дополнение новой редакции. В документе 1 соответствующий структурный элемент не установлен. '
+                     'В документ 2 включён следующий структурный элемент: '+_source(b)+'. '
+                     'Содержание дополнения: «'+b['text']+'». '
+                     'Вывод относится к представленным документам и требует проверки при наличии иных документов, закрепляющих указанное положение.')
+    elif b is None:
+        status='removed'
+        explanation=('В новой редакции соответствующий структурный элемент не установлен. '
+                     'В документе 1 содержится '+_source(a)+': «'+a['text']+'». '
+                     'В документе 2 текстовое соответствие не найдено. Необходимо установить, исключено ли положение '
+                     'либо перенесено в иной документ; отсутствие соответствия само по себе не подтверждает прекращение предусмотренной функции.')
     else:
         renumbered=_numeric_ref(a) and _numeric_ref(b) and a['ref']!=b['ref']
         status='moved' if renumbered and a['body']==b['body'] else 'unchanged' if a['text']==b['text'] else 'changed'
-        explanation='Текст без изменений.' if status=='unchanged' else ''
-        if renumbered:explanation=f"Изменена нумерация: {a['ref']} → {b['ref']}."
-        if status=='moved':explanation+=' Формулировка сохранена.'
+        explanation=('Сопоставлены '+_source(a)+' и '+_source(b)+'. ')
+        if status=='unchanged':
+            explanation+='Формулировка сохранена без изменений.'
+        if renumbered:
+            explanation+=f"Изменена нумерация: {a['ref']} → {b['ref']}. "
+        if status=='moved':
+            explanation+='Содержание положения сохранено; изменение относится к его обозначению и расположению в структуре документа.'
         elif status=='changed':
-            removed=_snippet(bp,'removed');added=_snippet(ap,'added')
-            edits=(f' Удалено: {removed}.' if removed else '')+(f' Добавлено: {added}.' if added else '')
-            explanation+=edits or ' Изменены пробелы или оформление.'
+            substantive=[change for change in changes if change['before'].strip() or change['after'].strip()]
+            for number,change in enumerate(substantive,1):
+                old=change['before'].strip(); new=change['after'].strip()
+                explanation+=f"Изменение {number}. "
+                if old and new:
+                    explanation+='Фрагмент «'+old+'» заменён фрагментом «'+new+'». '
+                elif old:
+                    explanation+='Исключён фрагмент: «'+old+'». '
+                elif new:
+                    explanation+='Включён фрагмент: «'+new+'». '
+            if not substantive:
+                explanation+='Изменены пробелы или расположение текста; различий в словесной формулировке не установлено. '
             old_neg=bool(re.search(r'\bне\s+(?:долж|вправе|име|допуска)|запрещ',a['body'],re.I))
             new_neg=bool(re.search(r'\bне\s+(?:долж|вправе|име|допуска)|запрещ',b['body'],re.I))
-            if old_neg!=new_neg:explanation+=' Изменена запретительная формулировка; проверьте смысл.'
-            if bool(re.search(r'\b(?:может|могут|вправе)\b',a['body'],re.I))!=bool(re.search(r'\b(?:может|могут|вправе)\b',b['body'],re.I)):explanation+=' Изменена формулировка возможности или полномочия.'
-    return dict(id='',before=a,after=b,status=status,explanation=explanation.strip(),beforeParts=bp,afterParts=ap)
+            if old_neg!=new_neg:
+                explanation+='Изменена запретительная формулировка; требуется определить, изменяется ли объём допустимых действий. '
+            if bool(re.search(r'\b(?:может|могут|вправе)\b',a['body'],re.I))!=bool(re.search(r'\b(?:может|могут|вправе)\b',b['body'],re.I)):
+                explanation+='Изменена формулировка возможности осуществления действия или предоставленного полномочия; необходимо уточнить условия её применения. '
+    return dict(id='',before=a,after=b,status=status,explanation=explanation.strip(),changes=changes,beforeParts=bp,afterParts=ap)
 
 def _pair_rows(left,right):
     matches=_match_clauses(left,right);anchors=defaultdict(list);pending=[]
@@ -133,8 +171,7 @@ def _pair_rows(left,right):
     return rows
 
 def _name_key(name):
-    name=re.sub(r'\.(?:docx?|pdf|md|txt)$','',name,flags=re.I)
-    name=re.sub(r'\.(?:docx?|pdf)$','',name,flags=re.I)
+    name=display_name(name)
     return re.sub(r'(?:редакция|версия|revision|version|до|после|before|after)[ _\-№No\d]*','',name,flags=re.I).replace('_',' ').strip().casefold()
 
 def compare_documents(payload):

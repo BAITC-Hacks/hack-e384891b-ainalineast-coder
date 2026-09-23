@@ -5,18 +5,20 @@ from urllib.parse import urlparse, parse_qs
 import base64, importlib.util, json, os, time, traceback, re, uuid
 import backend
 from export_api import export_document, FORMATS
+from legal_text import display_name
+from legal_report import build_conclusion
 
 ROOT = Path(__file__).resolve().parent
 MAX_BODY = 35 * 1024 * 1024
 CONTROL = {
  "before": [
-  {"name":"Контроль — до.md","unit":"Департамент финансов","text":"# Департамент финансов\n1.1. Департамент финансов формирует бюджет подразделений.\n1.2. Департамент финансов ведет реестр договоров.\n1.3. Департамент финансов проверяет платежные операции.\n1.4. Департамент финансов готовит отчет по ликвидности."},
+  {"name":"Контроль — финансы — редакция 1","unit":"Департамент финансов","text":"# Департамент финансов\n1.1. Департамент финансов формирует бюджет подразделений.\n1.2. Департамент финансов ведет реестр договоров.\n1.3. Департамент финансов проверяет платежные операции.\n1.4. Департамент финансов готовит отчет по ликвидности."},
  ],
  "after": [
-  {"name":"Контроль — после — финансы.md","unit":"Департамент финансов","text":"# Департамент финансов\n2.1. Департамент финансов формирует бюджет подразделений.\n2.2. Департамент финансов проверяет платежные операции.\n2.3. Департамент финансов выполняет платежные операции."},
-  {"name":"Контроль — после — казначейство.md","unit":"Департамент казначейства","text":"# Департамент казначейства\n3.1. Департамент казначейства формирует бюджет подразделений.\n3.2. Департамент казначейства ведет реестр договоров."}
+  {"name":"Контроль — финансы — редакция 2","unit":"Департамент финансов","text":"# Департамент финансов\n2.1. Департамент финансов формирует бюджет подразделений.\n2.2. Департамент финансов проверяет платежные операции.\n2.3. Департамент финансов выполняет платежные операции."},
+  {"name":"Контроль — казначейство — редакция 2","unit":"Департамент казначейства","text":"# Департамент казначейства\n3.1. Департамент казначейства формирует бюджет подразделений.\n3.2. Департамент казначейства ведет реестр договоров."}
  ],
- "label":"Синтетический контрольный пример — ожидаемые случаи описаны в docs/DEMO.md"
+ "label":"Контрольный пример распределения функций и полномочий"
 }
 
 class Handler(BaseHTTPRequestHandler):
@@ -45,8 +47,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(CONTROL)
             else:
                 try:
-                    self.reply({"before":[{"name":"Положение о внутреннем аудите · редакция 8.md","text":(ROOT/"data/audit-before.md").read_text(encoding="utf-8"),"unit":"Блок внутреннего аудита"}],
-                                "after":[{"name":"Положение о внутреннем аудите · редакция 9.md","text":(ROOT/"data/audit-after.md").read_text(encoding="utf-8"),"unit":"Блок внутреннего аудита"}],
+                    self.reply({"before":[{"name":"Положение о внутреннем аудите · редакция 8","text":(ROOT/"data/audit-before.md").read_text(encoding="utf-8"),"unit":"Блок внутреннего аудита"}],
+                                "after":[{"name":"Положение о внутреннем аудите · редакция 9","text":(ROOT/"data/audit-after.md").read_text(encoding="utf-8"),"unit":"Блок внутреннего аудита"}],
                                 "label":"Предоставленные обезличенные документы · редакции 8 и 9"})
                 except FileNotFoundError:
                     self.reply({"error":"Демонстрационные документы отсутствуют в data."},500)
@@ -103,9 +105,9 @@ class Handler(BaseHTTPRequestHandler):
                             raise ValueError("Файл превышает 15 МБ")
                         result=backend.extract_file(name,raw)
                         if isinstance(result,str): result={"text":result,"warnings":[]}
-                        output.append({"name":name,**result})
+                        output.append({"name":display_name(name),**result})
                     except Exception as exc:
-                        output.append({"name":name,"error":str(exc),"text":"","warnings":[]})
+                        output.append({"name":display_name(name),"error":str(exc),"text":"","warnings":[]})
                 self.reply({"files":output})
             elif self.path=="/api/export":
                 extension=str(payload.get("extension",""))
@@ -133,6 +135,7 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError("Каждый документ должен содержать читаемый текст")
                 started=time.perf_counter()
                 result=backend.analyze(payload)
+                result["conclusion"]=build_conclusion(result)
                 result["elapsedMs"]=round((time.perf_counter()-started)*1000)
                 self.reply(result)
             else: self.reply({"error":"Не найдено"},404)

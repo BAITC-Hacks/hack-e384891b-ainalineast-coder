@@ -22,6 +22,9 @@ class IntegrationTests(unittest.TestCase):
     def test_http_control_and_evidence(self):
         result=self.post("/api/analyze",CONTROL)
         self.assertIn("elapsedMs",result)
+        self.assertIn("conclusion",result)
+        self.assertTrue(result["conclusion"]["introduction"])
+        self.assertTrue(result["conclusion"]["result"])
         self.assertTrue(all(f["evidence"] for f in result["findings"]))
         self.assertGreaterEqual(result["stats"]["losses"],1)
     def test_reject_cross_origin(self):
@@ -35,6 +38,7 @@ class IntegrationTests(unittest.TestCase):
     def test_extract_reports_failed_file(self):
         result=self.post("/api/extract",{"files":[{"name":"ok.md","content":base64.b64encode("1.1. Отдел ведет реестр договоров.".encode()).decode()},{"name":"bad.doc","content":base64.b64encode(b"abc").decode()}]})
         self.assertIn("реестр",result["files"][0]["text"])
+        self.assertEqual(result["files"][0]["name"],"ok")
         self.assertIn("error",result["files"][1])
     def test_static_server_does_not_publish_source(self):
         with self.assertRaises(urllib.error.HTTPError) as cm: urllib.request.urlopen(self.url+"/backend.py")

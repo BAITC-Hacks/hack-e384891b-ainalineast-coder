@@ -20,6 +20,7 @@ import zipfile
 from datetime import datetime, timezone
 from functools import lru_cache
 from xml.etree import ElementTree as ET
+from legal_text import display_name, citation, add_citations, structural_headings
 
 MAX_FILE_BYTES = 15 * 1024 * 1024
 MAX_TEXT_CHARS = 600_000
@@ -160,7 +161,7 @@ def extract_file(name, data):
     elif ext in (".doc", ".xls"):
         raise ValueError("Старый бинарный формат не поддерживается. Сохраните файл в DOCX или XLSX.")
     else:
-        raise ValueError("Поддерживаются MD, TXT, DOCX, XLSX, CSV, TSV и текстовый PDF.")
+        raise ValueError("Поддерживаются документы Word, Excel, PDF с текстовым слоем, текстовые документы и таблицы с разделителями.")
     if len(text) > MAX_TEXT_CHARS:
         raise ValueError("Документ превышает лимит 600 000 символов. Разделите комплект.")
     if not text.strip():
@@ -193,13 +194,14 @@ def parse_document(item, side, index):
     raw = item["text"]
     if len(raw) > MAX_TEXT_CHARS:
         raise ValueError("Документ превышает лимит 600 000 символов.")
-    name = str(item.get("name") or f"{side}-{index+1}.txt")[:250]
+    name = display_name(item.get("name") or f"Документ {index+1}")
     docid = f"{side}-{index+1}-{hashlib.sha256((name+raw).encode()).hexdigest()[:8]}"
     docunit = str(item.get("unit") or "").strip()
     clauses, parent, section, unit = [], "", "", docunit
     inherited_prohibition = False
     # Conversion to Markdown can merge adjacent numbered paragraphs onto one line.
     raw = re.sub(r"(?<=[.!?;])\s+(?=\d{1,2}(?:\.\d{1,3}){1,3}\.(?:\s|[А-Я]))", "\n", raw)
+    known_headings = structural_headings(raw)
     in_toc = False
     for line_number, line in enumerate(raw.splitlines(), 1):
         line = _clean(line)
@@ -209,20 +211,19 @@ def parse_document(item, side, index):
             in_toc = True
         if in_toc:
             continue
-        numeric = re.match(r"^(\d{1,2}(?:\.\d{1,3}){1,3})\.?\s*([^\d].*)$", line)
+        numeric = re.match(r"^(\d{1,2}(?:\.\d{1,3}){0,3})\.?\s*([^\d].*)$", line)
         heading = re.match(r"^(\d{1,2})\.\s*([А-ЯA-Z].*)$", line)
         letter = re.match(r"^([а-яa-z])[\.\)]\s+(.+)$", line, re.I)
         bullet = re.match(r"^[-–•]\s*(.+)$", line)
-        if heading:
-            section = f"{heading.group(1)}. {heading.group(2)}"
+        if line_number in known_headings:
+            section = line
             unit = docunit
             inherited_prohibition = False
-            if len(heading.group(2)) < 150:
-                continue
+            continue
         if numeric:
             ref, content = numeric.groups()
             parent = ref
-            if ref.count(".") == 1:
+            if ref.count(".") <= 1:
                 unit = _owner(content, docunit)
                 inherited_prohibition = bool(re.search(r"не (?:имеет права|имеют права|вправе|допускается)|запрещ", content, re.I))
             if re.match(r"(?:Директор|Главный аудитор|Работники БВА)", content) and content.endswith(":"):
@@ -263,6 +264,7 @@ def parse_document(item, side, index):
         clauses.append({"id": f"{docid}-c{len(clauses)+1}", "docId": docid, "document": name, "side": side,
                         "ref": ref, "text": content, "section": section, "unit": clause_unit, "line": line_number,
                         "functional": functional, "prohibition": prohibition, "heading": is_heading})
+    add_citations(clauses, raw)
     return {"id": docid, "name": name, "side": side, "unit": docunit, "clauses": clauses}
 
 def _unit_records(documents):
@@ -289,19 +291,18 @@ def _unit_records(documents):
                 add(c["unit"], doc["side"], c)
     for record in result.values():
         record["status"] = "retained" if record["before"] and record["after"] else "created" if record["after"] else "removed"
-        record["evidence"] = record["evidence"][:4]
     return list(result.values())
 
 def _modality_change(a, b):
     """Do not erase negation or mandatory/optional differences during matching."""
     old, new = a["text"].lower(), b["text"].lower()
     if a["prohibition"] != b["prohibition"]:
-        return "Изменена запретительная формулировка; требуется проверить смысл полномочий."
+        return "Выявлено изменение запретительной формулировки. Изменение текста установлено; допустимость изменения полномочий и обязанностей подлежит отдельному согласованию."
     optional = r"\bмож(?:ет|но|ют)\b|\bвправе\b"
     if not re.search(optional, old) and re.search(optional, new):
         if _norm(old) in _norm(new):
             return ""  # A new permission was appended; the existing duty remains intact.
-        return "Обязательная формулировка заменена возможностью выполнения; покрытие функции стало менее определённым."
+        return "В новой редакции введена формулировка возможности осуществления действия, отсутствовавшая в сопоставленном положении прежней редакции. Необходимо уточнить, сохраняется ли обязанность выполнения указанной функции и при каких условиях она реализуется."
     return ""
 
 def _function_candidates(documents, side):
@@ -313,6 +314,11 @@ def _findings_builder():
         unique = list({c["id"]: c for c in evidence if c}.values())
         if not unique:
             return
+        grounds = "\n".join(
+            f"{i}. {citation(c)[:1].upper() + citation(c)[1:]} документа «{display_name(c['document'])}» "
+            f"({'прежняя редакция' if c['side'] == 'before' else 'новая редакция'}): «{c['text']}»."
+            for i, c in enumerate(unique, 1))
+        explanation = explanation.rstrip() + "\nОснования сопоставления:\n" + grounds
         findings.append({"id": f"F{len(findings)+1:03d}", "type": kind, "severity": severity, "title": title,
                          "explanation": explanation, "recommendation": recommendation, "evidence": unique,
                          "confidence": confidence, "review": "pending"})
@@ -350,17 +356,17 @@ def _duplicate_and_conflict(after, add):
                 scoped = "зон" in a["text"].lower() and "зон" in b["text"].lower()
                 if score >= .88 and not routine and not scoped and len(_tokens(a["text"])) >= 3:
                     seen.add(key)
-                    add("duplicate", "medium", "Возможное пересечение ответственности",
-                        f"Похожие действия закреплены за «{a['unit']}» и «{b['unit']}». Сходство текста {score:.0%}; это ещё не доказывает избыточность.",
-                        "Уточнить объекты, границы и ведущего исполнителя; подтвердить, что параллельное участие предусмотрено.", [a, b])
+                    add("duplicate", "medium", "Выявлены признаки пересечения полномочий разных подразделений",
+                        f"Сопоставленные положения закрепляют сходные действия за подразделениями «{a['unit']}» и «{b['unit']}». Коэффициент текстового сходства составляет {score:.0%}. Совпадение формулировок является основанием для проверки разграничения ответственности, но само по себе не подтверждает избыточное дублирование функций.",
+                        "Уточнить объекты и пределы полномочий каждого подразделения, определить основного и соисполнителя, а также порядок их взаимодействия. При совместном исполнении закрепить разграничение ответственности в соответствующих положениях.", [a, b])
             elif (_is_execution(a) and _is_control(b)) or (_is_execution(b) and _is_control(a)):
                 oa, ob = _objects(_function_text(a)), _objects(_function_text(b))
                 shared = oa & ob
                 if shared and len(shared)/max(1,min(len(oa),len(ob))) >= .45:
                     seen.add(key)
-                    add("conflict", "high", "Возможный самоконтроль одного подразделения",
-                        f"«{a['unit']}» выполняет действия и проверяет сходный объект. Это потенциальное пересечение исполнения и контроля.",
-                        "Проверить независимость контроля и назначить независимого проверяющего либо зафиксировать компенсирующие меры.", [a,b])
+                    add("conflict", "high", "Выявлены признаки совмещения исполнения и контроля в одном подразделении",
+                        f"Сопоставленные положения предусматривают участие подразделения «{a['unit']}» в исполнении действий и контроле сходного объекта. Выявлено основание для проверки независимости контроля. Фактический конфликт интересов или нарушение принципа независимости на основании одного текстового сопоставления не установлены.",
+                        "Проверить организационную и функциональную независимость контролирующего лица, порядок подчинённости и утверждения результатов проверки. При подтверждении совмещения определить независимого проверяющего либо документально закрепить достаточные меры разграничения исполнения и контроля.", [a,b])
 
 def _ollama_refine(mappings, before, after, settings, warnings, trace):
     unresolved = [m for m in mappings if m["status"] == "missing"][:8]
@@ -433,7 +439,7 @@ def analyze(payload):
     if any(not str(item.get("text", "")).strip() for side in ("before", "after") for item in payload[side]):
         raise ValueError("Один из документов не содержит распознаваемого текста.")
     warnings = ["Выводы рекомендательные. Отсутствие соответствия в загруженном комплекте не доказывает фактическую потерю функции.",
-                "Автономное сопоставление использует нормализацию, основы слов и сходство текста. Числовой score — сходство, не вероятность правильности."]
+                "Положения сопоставлены по формулировкам и содержанию. Степень текстового сходства не подтверждает тождественность полномочий и не заменяет оценку их правового содержания."]
     before, after = _function_candidates(documents, "before"), _function_candidates(documents, "after")
     trace = [{"step": "Разбор источников", "status": "done", "detail": f"Документов: {len(documents)}. Извлечены пункты, подпункты и владельцы, где они заданы."}]
     mappings = []
@@ -455,7 +461,7 @@ def analyze(payload):
             mappings.append({"id": f"M{len(mappings)+1:03d}", "before":a,"after":b,"status":status,"score":score,"reason":reason,"method":"lexical"})
         else:
             mappings.append({"id": f"M{len(mappings)+1:03d}", "before":a,"after":None,"status":"missing","score":score,
-                             "reason":"Достаточно близкое соответствие не найдено в загруженном комплекте. Это кандидат для проверки.","method":"lexical"})
+                             "reason":"В представленной новой редакции не установлено достаточное текстовое соответствие. Требуется проверить сохранение функции и её документальное закрепление.","method":"lexical"})
     trace.append({"step":"Сопоставление функций","status":"done","detail":f"Проверено {len(before)} исходных функций с учётом перенумерации и изменения владельца."})
     llm_used, refined = False, 0
     if payload.get("llm") is True:
@@ -464,18 +470,25 @@ def analyze(payload):
     for m in mappings:
         a,b = m["before"],m["after"]
         if m["status"] == "missing" and not a["prohibition"]:
-            add("loss","medium","Не найдено закрепление: " + _function_text(a)[:75].rstrip(" .;") + ("…" if len(_function_text(a)) > 75 else ""),
-                f"Для пункта {a['ref']} («{a['unit']}») не найдено достаточно близкого соответствия в комплекте «после». Функция могла быть перенесена в отсутствующий документ или описана другими словами.",
-                "Проверить документы-преемники и подтвердить владельца. При необходимости закрепить функцию явно.",[a])
+            add("loss","medium", "Не установлено закрепление функции в новой редакции: " + _function_text(a),
+                f"В прежней редакции функция предусмотрена в следующем структурном элементе: {citation(a)} документа «{a['document']}». "
+                f"Ответственный субъект согласно представленному тексту: «{a['unit']}». "
+                "В представленном комплекте новой редакции не установлено положение с достаточным текстовым соответствием. "
+                "Указанное обстоятельство свидетельствует о необходимости проверки полноты документального закрепления функции; "
+                "оно само по себе не подтверждает прекращение её выполнения или нарушение обязательных требований.",
+                f"Проверить сохранение функции, предусмотренной в следующем структурном элементе: {citation(a)}. "
+                "При передаче функции определить принимающее подразделение и указать конкретное положение документа-преемника. "
+                "При исключении функции оформить основание и решение уполномоченного органа. "
+                "До завершения проверки не считать отсутствие текстового соответствия подтверждённой утратой функции.", [a])
         elif b and _modality_change(a,b):
-            add("change","high","Изменена обязательность или запрет",_modality_change(a,b),
-                "Согласовать изменение с владельцем функции и подтвердить, что контроль сохраняется.",[a,b],"Подтверждено текстом")
+            add("change","high","Изменена формулировка обязанности, запрета или предоставленного полномочия",_modality_change(a,b),
+                "Согласовать новую редакцию с ответственным подразделением и уполномоченным органом. Уточнить условия реализации полномочия, обязательность выполнения функции и порядок контроля; при необходимости изложить соответствующее положение в однозначной редакции.",[a,b],"Изменение формулировки подтверждено текстом")
     units = _unit_records(documents)
     for record in units:
         if record["status"] in ("created","removed"):
-            add("change","low","Новое закрепление подразделения" if record["status"]=="created" else "Подразделение не найдено в новом комплекте",
+            add("change","low","Выявлено указание на подразделение в новой редакции" if record["status"]=="created" else "Указание на подразделение не установлено в новой редакции",
                 f"«{record['name']}» присутствует только в комплекте «{'после' if record['status']=='created' else 'до'}». Это изменение документального состава, а не доказательство юридического создания или ликвидации.",
-                "Сверить с распорядительным документом и штатным расписанием.",record["evidence"])
+                "Сопоставить выявленное изменение с утверждённой организационной структурой, штатным расписанием и распорядительным документом о реорганизации. Установить правопреемство функций и ответственных лиц; при отсутствии подтверждающих документов запросить их у владельца документа.",record["evidence"])
     _duplicate_and_conflict(after,add)
     # A governance-role permission may create a potential independence risk, but
     # the actual clause includes safeguards and must be shown in full.
@@ -486,16 +499,16 @@ def analyze(payload):
         independence = next((c for c in doc["clauses"] if "независимыми от исполнительных органов" in c["text"]),None)
         if governance and independence:
             safeguards = [c for c in doc["clauses"] if c["ref"].startswith(governance["ref"]+".")]
-            add("conflict","medium","Совмещение участия в управлении и внутреннего аудита",
+            add("conflict","medium","Необходима проверка гарантий независимости при участии Главного аудитора в органах управления",
                 "Новая редакция разрешает Главному аудитору участие в органах управления подконтрольных обществ. В этом же пункте предусмотрены меры независимости, раскрытие и заявления о конфликте. Требуется проверить применение мер; фактический конфликт документами не установлен.",
-                "Проверить раскрытие совмещения, декларации и независимый контроль соответствующих объектов.",[governance,independence]+safeguards)
+                "Проверить предусмотренные новой редакцией условия участия в органах управления, раскрытие соответствующих обстоятельств и оформление заявлений о конфликте интересов. Установить, кто осуществляет независимый аудит соответствующих объектов, и документально закрепить порядок рассмотрения результатов такого аудита.",[governance,independence]+safeguards)
     if any(c["unit"] == "Не определено" for c in before+after):
-        warnings.append("Для части пунктов владелец не определён. Укажите подразделение при загрузке или используйте заголовок «Подразделение: …».")
+        warnings.append("Для части пунктов владелец не определён. Укажите подразделение при загрузке или используйте заголовок с наименованием подразделения.")
     if not before or not after:
         warnings.append("В одном из комплектов не найдены явные функции. Проверьте качество извлечения текста и формулировки.")
     if any("Приложение" in d["clauses"][-1]["text"] for d in documents if d["clauses"]):
         warnings.append("В тексте встречаются ссылки на приложения. Убедитесь, что сами приложения загружены; их содержание нельзя восстановить по названию.")
-    trace.append({"step":"Проверка отклонений","status":"done","detail":"Проверены кандидаты потери, пересечения разных владельцев, совмещение исполнения и контроля, отрицания и обязательность."})
+    trace.append({"step":"Проверка отклонений","status":"done","detail":"Проверена полнота закрепления функций, разграничение полномочий подразделений, совмещение исполнения и контроля, изменение запретов и условий обязательного выполнения действий."})
     trace.append({"step":"Проверка доказательств","status":"done","detail":f"Все {len(findings)} выводов содержат ссылки на извлечённые фрагменты. Решение остаётся за экспертом."})
     comparison = compare_documents(payload)
     counts = {status:sum(m["status"]==status for m in mappings) for status in ("preserved","modified","moved","missing")}

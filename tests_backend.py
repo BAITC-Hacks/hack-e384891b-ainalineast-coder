@@ -69,7 +69,7 @@ class ComparisonTests(unittest.TestCase):
     def test_obligation_weakening_is_not_lost_in_normalization(self):
         r = self.run_pair([document("9.15. Для определения объема проверки осуществляется анализ контрольных процедур объекта аудита.", "Аудит")],
                           [document("9.15. Для определения объема проверки может осуществляться анализ контрольных процедур объекта аудита.", "Аудит")])
-        self.assertTrue(any(f["title"]=="Изменена обязательность или запрет" for f in r["findings"]))
+        self.assertTrue(any(f["title"]=="Изменена формулировка обязанности, запрета или предоставленного полномочия" for f in r["findings"]))
 
     def test_evidence_integrity_and_no_implicit_llm(self):
         r = self.run_pair([document("1.1. Проверяет учет оборудования.", "Аудит")],

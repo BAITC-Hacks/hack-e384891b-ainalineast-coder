@@ -1,22 +1,22 @@
 
-AUDIT_DIAGNOSTIC={"stats": {"preserved": 317, "modified": 32, "moved": 36, "missing": 3, "beforeFunctions": 388, "afterFunctions": 382, "documents": 2, "units": 5, "findings": 11, "losses": 3, "duplicates": 4, "conflicts": 1, "changes": 3, "durationMs": 1942}, "engine": {"name": "Versa Evidence Engine", "mode": "offline", "llmUsed": false, "llmRequested": false, "refinedPairs": 0, "version": "1.0", "description": "Автономный алгоритм сопоставления текста"}, "units": [{"name": "Блок внутреннего аудита", "status": "retained"}, {"name": "ДНМ", "status": "retained"}, {"name": "ДККМ", "status": "retained"}, {"name": "ДИТААД", "status": "created"}, {"name": "ДОА", "status": "created"}], "specialMappings": [{"before": "5.4.4.а", "after": "5.3.3.а", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.4.4.б", "after": "5.3.3.б", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.6.2", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.2792}, {"before": "5.6.3", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.3942}, {"before": "9.15", "after": "9.15", "from": "Блок внутреннего аудита", "to": "Блок внутреннего аудита", "status": "modified", "score": 0.861}], "findings": [{"type": "loss", "title": "Не найдено закрепление: формировать группы контроля качества с привлечением работников БВА в соотве…", "refs": ["5.6.2"]}, {"type": "loss", "title": "Не найдено закрепление: выносить предложения по объему и содержанию внешней оценки БВА Главному ауд…", "refs": ["5.6.3"]}, {"type": "loss", "title": "Не найдено закрепление: доводить до сведения Руководителей Общества результаты по запросу оказания…", "refs": ["5.7.2"]}, {"type": "change", "title": "Изменена обязательность или запрет", "refs": ["9.15", "9.15"]}, {"type": "change", "title": "Новое закрепление подразделения", "refs": ["3.4.а", "5.3.2.а"]}, {"type": "change", "title": "Новое закрепление подразделения", "refs": ["3.4.б", "5.3.2.б"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.1.4", "5.5.5"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.3.6", "5.4.3"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.3.12", "5.4.9"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.5.2", "10.5.б"]}, {"type": "conflict", "title": "Совмещение участия в управлении и внутреннего аудита", "refs": ["4.4", "1.3", "4.4.а", "4.4.б"]}]}
+AUDIT_DIAGNOSTIC={"stats": {"preserved": 317, "modified": 32, "moved": 36, "missing": 3, "beforeFunctions": 388, "afterFunctions": 382, "documents": 2, "units": 5, "findings": 11, "losses": 3, "duplicates": 4, "conflicts": 1, "changes": 3, "durationMs": 2271}, "engine": {"name": "Versa Evidence Engine", "mode": "offline", "llmUsed": false, "llmRequested": false, "refinedPairs": 0, "version": "1.0", "description": "Автономный алгоритм сопоставления текста"}, "units": [{"name": "Блок внутреннего аудита", "status": "retained"}, {"name": "ДНМ", "status": "retained"}, {"name": "ДККМ", "status": "retained"}, {"name": "ДИТААД", "status": "created"}, {"name": "ДОА", "status": "created"}], "specialMappings": [{"before": "5.4.4.а", "after": "5.3.3.а", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.4.4.б", "after": "5.3.3.б", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.6.2", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.2792}, {"before": "5.6.3", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.3942}, {"before": "9.15", "after": "9.15", "from": "Блок внутреннего аудита", "to": "Блок внутреннего аудита", "status": "modified", "score": 0.861}], "findings": [{"type": "loss", "title": "Не установлено закрепление функции в новой редакции: формировать группы контроля качества с привлечением работников БВА в соответствии с ресурсным планом и бюджетом затрат БВА;", "refs": ["5.6.2"]}, {"type": "loss", "title": "Не установлено закрепление функции в новой редакции: выносить предложения по объему и содержанию внешней оценки БВА Главному аудитору;", "refs": ["5.6.3"]}, {"type": "loss", "title": "Не установлено закрепление функции в новой редакции: доводить до сведения Руководителей Общества результаты по запросу оказания консультационных услуг;", "refs": ["5.7.2"]}, {"type": "change", "title": "Изменена формулировка обязанности, запрета или предоставленного полномочия", "refs": ["9.15", "9.15"]}, {"type": "change", "title": "Выявлено указание на подразделение в новой редакции", "refs": ["3.4.а", "5.3.2.а"]}, {"type": "change", "title": "Выявлено указание на подразделение в новой редакции", "refs": ["3.4.б", "5.3.2.б"]}, {"type": "duplicate", "title": "Выявлены признаки пересечения полномочий разных подразделений", "refs": ["5.1.4", "5.5.5"]}, {"type": "duplicate", "title": "Выявлены признаки пересечения полномочий разных подразделений", "refs": ["5.3.6", "5.4.3"]}, {"type": "duplicate", "title": "Выявлены признаки пересечения полномочий разных подразделений", "refs": ["5.3.12", "5.4.9"]}, {"type": "duplicate", "title": "Выявлены признаки пересечения полномочий разных подразделений", "refs": ["5.5.2", "10.5.б"]}, {"type": "conflict", "title": "Необходима проверка гарантий независимости при участии Главного аудитора в органах управления", "refs": ["4.4", "1.3", "4.4.а", "4.4.б"]}]}
 
 CONTROL_DIAGNOSTIC={"stats": {"preserved": 2, "modified": 0, "moved": 1, "missing": 1, "beforeFunctions": 4, "afterFunctions": 5, "documents": 3, "units": 2, "findings": 4, "losses": 1, "duplicates": 1, "conflicts": 1, "changes": 1, "durationMs": 3}, "findings": [{"type": "loss", "refs": ["1.4"]}, {"type": "change", "refs": ["3.1", "3.2"]}, {"type": "duplicate", "refs": ["2.1", "3.1"]}, {"type": "conflict", "refs": ["2.2", "2.3"]}]}
-16:41:22 "POST /api/export-document HTTP/1.1" 200 -
-16:41:23 "GET /exports/172a680825fb.docx HTTP/1.1" 200 -
-16:41:23 "POST /api/export-document HTTP/1.1" 200 -
-16:41:23 "GET /exports/ed6aebbd9a7b.xlsx HTTP/1.1" 200 -
-16:41:23 "POST /api/export-document HTTP/1.1" 200 -
-16:41:23 "GET /exports/4c93df9bc4b4.pdf HTTP/1.1" 200 -
-16:41:23 "POST /api/export-document HTTP/1.1" 400 -
-16:41:24 "POST /api/export HTTP/1.1" 200 -
-16:41:24 "GET /exports/659cfd17355f.html HTTP/1.1" 200 -
-16:41:24 "POST /api/export HTTP/1.1" 400 -
-16:41:24 "POST /api/extract HTTP/1.1" 200 -
-16:41:24 "POST /api/analyze HTTP/1.1" 200 -
-16:41:24 "POST /api/analyze HTTP/1.1" 403 -
-16:41:24 "POST /api/analyze HTTP/1.1" 400 -
-16:41:24 "GET /backend.py HTTP/1.1" 404 -
+17:13:54 "POST /api/export-document HTTP/1.1" 200 -
+17:13:54 "GET /exports/2bea6265638a.docx HTTP/1.1" 200 -
+17:13:54 "POST /api/export-document HTTP/1.1" 200 -
+17:13:54 "GET /exports/d3f3c2404406.xlsx HTTP/1.1" 200 -
+17:13:54 "POST /api/export-document HTTP/1.1" 200 -
+17:13:54 "GET /exports/5fffd94b1d40.pdf HTTP/1.1" 200 -
+17:13:54 "POST /api/export-document HTTP/1.1" 400 -
+17:13:55 "POST /api/export HTTP/1.1" 200 -
+17:13:55 "GET /exports/ef3ec4d2337f.html HTTP/1.1" 200 -
+17:13:55 "POST /api/export HTTP/1.1" 400 -
+17:13:55 "POST /api/extract HTTP/1.1" 200 -
+17:13:55 "POST /api/analyze HTTP/1.1" 200 -
+17:13:55 "POST /api/analyze HTTP/1.1" 403 -
+17:13:55 "POST /api/analyze HTTP/1.1" 400 -
+17:13:55 "GET /backend.py HTTP/1.1" 404 -
 test_distinct_owners_duplicate (tests_backend.ComparisonTests.test_distinct_owners_duplicate) ... ok
 test_empty_input_is_rejected (tests_backend.ComparisonTests.test_empty_input_is_rejected) ... ok
 test_evidence_integrity_and_no_implicit_llm (tests_backend.ComparisonTests.test_evidence_integrity_and_no_implicit_llm) ... ok
@@ -68,8 +68,20 @@ test_reject_cross_origin (tests_integration.IntegrationTests.test_reject_cross_o
 test_reject_empty_documents (tests_integration.IntegrationTests.test_reject_empty_documents) ... ok
 test_static_server_does_not_publish_source (tests_integration.IntegrationTests.test_static_server_does_not_publish_source) ... ok
 test_xlsx_values (tests_integration.IntegrationTests.test_xlsx_values) ... ok
+test_actual_section_and_article_are_retained_by_both_parsers (tests_legal.LegalPresentationTests.test_actual_section_and_article_are_retained_by_both_parsers) ... ok
+test_added_removed_explanations_quote_full_content (tests_legal.LegalPresentationTests.test_added_removed_explanations_quote_full_content) ... ok
+test_complete_changes_are_not_truncated_or_limited_to_three (tests_legal.LegalPresentationTests.test_complete_changes_are_not_truncated_or_limited_to_three) ... ok
+test_display_title_preserves_full_name_and_removes_only_transport_suffixes (tests_legal.LegalPresentationTests.test_display_title_preserves_full_name_and_removes_only_transport_suffixes) ... ok
+test_loss_title_and_reason_include_full_source_without_false_legal_breach (tests_legal.LegalPresentationTests.test_loss_title_and_reason_include_full_source_without_false_legal_breach) ... ok
+test_numbered_real_heading_and_unknown_bold_clause (tests_legal.LegalPresentationTests.test_numbered_real_heading_and_unknown_bold_clause) ... ok
+test_numeric_reference_does_not_invent_hierarchy (tests_legal.LegalPresentationTests.test_numeric_reference_does_not_invent_hierarchy) ... ok
+test_section_heading_not_inferred_from_unrelated_numeric_prefix (tests_legal.LegalPresentationTests.test_section_heading_not_inferred_from_unrelated_numeric_prefix) ... ok
+test_conclusion_uses_actual_counts_and_clean_titles (tests_report.LegalConclusionTests.test_conclusion_uses_actual_counts_and_clean_titles) ... ok
+test_every_changed_position_and_entire_quotations_retained (tests_report.LegalConclusionTests.test_every_changed_position_and_entire_quotations_retained) ... ok
+test_html_escapes_untrusted_text_and_keeps_end_marker (tests_report.LegalConclusionTests.test_html_escapes_untrusted_text_and_keeps_end_marker) ... ok
+test_no_invented_article_and_explicit_limits (tests_report.LegalConclusionTests.test_no_invented_article_and_explicit_limits) ... ok
 
 ----------------------------------------------------------------------
-Ran 51 tests in 6.516s
+Ran 63 tests in 5.113s
 
 OK

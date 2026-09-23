@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import html, json, platform, subprocess, sys, time
 import backend
 from comparison_report import render_comparison
+from legal_report import build_conclusion, render_conclusion
 from app import CONTROL
 ROOT=Path(__file__).resolve().parent
 def main():
@@ -20,17 +21,14 @@ def main():
     e=html.escape
     for name,payload in cases.items():
         begin=time.perf_counter(); analysis=backend.analyze(payload); elapsed=round((time.perf_counter()-begin)*1000)
+        analysis["conclusion"]=build_conclusion(analysis)
         (out/(name+"-analysis.json")).write_text(json.dumps(analysis,ensure_ascii=False,indent=2),encoding="utf-8")
         clauses={c["id"]:c for d in analysis["documents"] for c in d["clauses"]}
         evidence_ok=all(c.get("id") in clauses and c["text"]==clauses[c["id"]]["text"] for f in analysis["findings"] for c in f["evidence"])
         assert evidence_ok, "Invalid source evidence"
         summary["cases"][name]={"elapsedMs":elapsed,"stats":analysis["stats"],"evidenceReferencesValid":evidence_ok,"comparisonStats":analysis["comparison"]["stats"]}
         (out/(name+"-comparison.html")).write_text(render_comparison(analysis),encoding="utf-8")
-        rows=[]
-        for f in analysis["findings"]:
-            rows.append("<article><h3>"+e(f["title"])+"</h3><p>"+e(f["explanation"])+"</p><p><b>Рекомендация:</b> "+e(f["recommendation"])+"</p>"+"".join("<blockquote><b>"+e(c["document"])+" · п. "+e(c["ref"])+"</b><br>"+e(c["text"])+"</blockquote>" for c in f["evidence"])+"<p class='muted'>Решение эксперта: на проверке.</p></article>")
-        body="<h1>Versa — аналитическое заключение</h1><p>"+("Предоставленные редакции 8 и 9" if name=="audit" else "Синтетический контрольный пример")+"</p><p>Дата: "+e(summary["generatedAt"])+"</p><p>Время текущего запуска: "+str(elapsed)+" мс. Замечаний: "+str(len(analysis["findings"]))+". Все ссылки на извлечённые фрагменты проверены программно.</p><h2>Подразделения</h2><ul>"+"".join("<li>"+e(u["name"])+" — "+e({"retained":"сохранено","created":"впервые в новом комплекте","removed":"не найдено после"}.get(u["status"],u["status"]))+"</li>" for u in analysis["units"])+"</ul><h2>Наблюдения для экспертной проверки</h2>"+"".join(rows)+"<h2>Ограничения</h2><p>Использованы локальные правила и лексическое сопоставление. Языковая модель в этом запуске не использовалась. Кандидат отсутствия функции не доказывает её фактическую утрату. Источники — обезличенные материалы пользователя; внешняя нормативная проверка не выполнялась.</p>"
-        page="<!doctype html><html lang='ru'><meta charset='utf-8'><title>Versa — заключение</title><style>body{max-width:1000px;margin:50px auto;padding:0 30px;font:16px/1.7 Arial;color:#1b2b40}h1{color:#0095da}article{border-top:1px solid #dce5ed;padding:20px 0}blockquote{border-left:3px solid #20a2de;margin:15px 0;padding:10px 20px;background:#f0f8ff}.muted{color:#778899;font-size:13px}@media print{article{break-inside:avoid}}</style><body>"+body+"</body></html>"
+        page=render_conclusion(analysis)
         (out/(name+"-conclusion.html")).write_text(page,encoding="utf-8")
     (out/"summary.json").write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding="utf-8")
     print(json.dumps(summary,ensure_ascii=False,indent=2));return 0

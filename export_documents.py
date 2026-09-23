@@ -6,13 +6,15 @@ from io import BytesIO
 from pathlib import Path
 import re
 import threading
+from legal_text import display_name, citation
 
 MISSING = "Данный пункт в документе отсутствует."
 RED = "B42335"
 BLUE = "0D4277"
 STATUS = {
-    "unchanged": "Без изменений", "changed": "Изменено", "added": "Добавлено",
-    "removed": "Удалено", "moved": "Перенесено",
+    "unchanged": "Положение сохранено без изменений", "changed": "Положение изменено",
+    "added": "Включено новое положение", "removed": "Положение исключено",
+    "moved": "Изменена нумерация или место положения",
 }
 _PDF_LOCK = threading.RLock()
 _FONTS_READY = False
@@ -32,7 +34,7 @@ def _comparison(analysis):
 
 def _names(comparison, side):
     docs = comparison.get("documents", {}).get(side, [])
-    return "\n".join(_text(d.get("name")) for d in docs if d.get("name")) or (
+    return "\n".join(_text(display_name(d.get("name"))) for d in docs if d.get("name")) or (
         "Документ 1" if side == "before" else "Документ 2"
     )
 
@@ -112,7 +114,7 @@ def export_docx(analysis):
         cell._tc.get_or_add_tcPr().append(node)
 
     headers = ["Документ 1\n" + _names(comparison, "before"),
-               "Документ 2\n" + _names(comparison, "after"), "Что изменилось"]
+               "Документ 2\n" + _names(comparison, "after"), "Содержание изменений и дополнений"]
     for cell, width, title in zip(table.rows[0].cells, widths, headers):
         cell.width = width
         cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
@@ -141,7 +143,10 @@ def export_docx(analysis):
                 run.italic = True
                 run.font.color.rgb = RGBColor.from_string("66758A")
                 continue
-            ref = _text(clause.get("ref"))
+            if len(comparison.get("documents", {}).get(side, [])) > 1:
+                paragraph.add_run(_text(display_name(clause.get("document"))))
+                paragraph = cell.add_paragraph()
+            ref = _text(citation(clause))
             if ref:
                 run = paragraph.add_run(ref)
                 run.bold = True
@@ -222,7 +227,7 @@ def export_pdf(analysis):
                            f"Строк в таблице: {len(comparison['rows'])}.", body), Spacer(1, 10)]
         data = [[Paragraph("Документ 1<br/>" + _markup(_names(comparison, "before")), header),
                  Paragraph("Документ 2<br/>" + _markup(_names(comparison, "after")), header),
-                 Paragraph("Что изменилось", header)]]
+                 Paragraph("Содержание изменений и дополнений", header)]]
         for index, row in enumerate(comparison["rows"], 1):
             result = []
             for side in ("before", "after"):
@@ -238,8 +243,10 @@ def export_pdf(analysis):
                         if part.get("kind") == "removed":
                             piece = "<strike>" + piece + "</strike>"
                     fragments.append(piece)
-                ref = _markup(clause.get("ref"))
+                ref = _markup(citation(clause))
                 text = ('<font color="#' + BLUE + '"><b>' + ref + "</b></font><br/>") if ref else ""
+                if len(comparison.get("documents", {}).get(side, [])) > 1:
+                    text = _markup(display_name(clause.get("document"))) + "<br/>" + text
                 result.append(Paragraph(text + "".join(fragments) or " ", body))
             heading, _, detail = _explanation(row, index).partition("\n")
             result.append(Paragraph("<b>" + _markup(heading) + "</b>" +

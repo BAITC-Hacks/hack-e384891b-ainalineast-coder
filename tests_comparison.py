@@ -80,7 +80,8 @@ class CompleteComparisonTests(unittest.TestCase):
         self.assertNotIn('<script>',page)
         self.assertIn('&lt;script&gt;',page)
         self.assertIn('<ins>новая ',page)
-        self.assertIn('Документ 1.md',page)
+        self.assertIn('Документ 1',page)
+        self.assertNotIn('Документ 1.md',page)
         self.assertEqual(page.count('<tr>'),len(r['rows'])+1)
     def test_version_and_date_are_aligned(self):
         a='от «25» июня 2021 года\n\nПоложение\n\n(редакция No8)'
