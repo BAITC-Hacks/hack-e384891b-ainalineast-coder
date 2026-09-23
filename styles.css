@@ -182,3 +182,27 @@ body.table-expanded{overflow:hidden}
 @media print{.legal-report-heading{break-after:avoid}.legal-section h3,.legal-change-heading{break-after:avoid}.legal-appendix{break-before:page}.legal-report{font-size:11pt}.legal-report blockquote{font-size:10pt}.legal-versions{display:block}.legal-finding,.legal-change{break-inside:auto}.legal-report .legal-review{display:none}}
 
 @media(max-width:700px){.report-side{grid-template-columns:repeat(2,minmax(0,1fr))}.report-side .button{white-space:normal;min-width:0;padding:11px 9px;font-size:14px}.report-side>*{min-width:0}.hero-sheet b{font-size:11px}}
+
+
+/* Documents first: two clear upload areas, then comparison and conclusion. */
+body[data-current-view="documents"] .title-row{min-height:154px;padding-top:22px;padding-bottom:22px}
+body[data-current-view="documents"] .title-actions{display:none}
+body[data-current-view="documents"] .title-row h1{font-size:36px}
+body[data-current-view="documents"] .hero-art{transform:scale(.74);transform-origin:right center;height:128px}
+.app-header nav .step-number{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;background:#dfedf7;color:#1f6395;font-size:12px;font-weight:800;margin-right:5px}
+.app-header nav .active .step-number{background:#fff;color:#0c457f}
+.app-header nav button:disabled{opacity:.48;cursor:default}
+.upload-options{margin-bottom:18px}.upload-options h2{font-size:23px}.upload-options p{font-size:15px}
+.upload-grid{gap:22px}.upload-panel{border:1px solid #c5def0;background:#e1eff9}
+.upload-heading{padding:20px 25px 15px}.upload-heading p{font-size:14px;color:#4c7190}
+.dropzone{margin:0 24px 23px;border:2px dashed #3695cd;background:#f5fbff;padding:22px 18px;min-height:180px}
+.dropzone:hover{background:#eaf7ff;border-color:#0873b9;box-shadow:0 0 0 4px #1684d710}
+.dropzone strong{color:#0c639f;font-size:20px;font-weight:800}.dropzone>span:not(.upload-arrow){color:#527b9a}.dropzone small{color:#436b8a;font-size:13px;margin-top:10px}
+.upload-arrow{width:43px;height:43px;font-size:27px;margin-bottom:5px}
+.run-panel{padding:20px 25px;margin-top:20px}.run-panel strong{font-size:18px;color:#0c457f}.run-panel #upload-status{font-size:15px;color:#436b8a;margin-top:5px}
+.run-panel .button:disabled{opacity:.45;box-shadow:none;cursor:default}
+.upload-support{display:grid;grid-template-columns:1fr 1fr;gap:25px;align-items:start;margin-top:23px}
+.analysis-settings{font-size:14px;color:#567992;padding:12px 0}.analysis-settings summary{cursor:pointer;color:#356888;font-weight:700}.analysis-settings .check-label{margin-top:16px}.analysis-settings p,.analysis-settings small{font-size:13px;line-height:1.65;display:block;margin-top:8px}
+.demo-panel{border-left:1px solid #cbdfea;padding-left:25px}.demo-panel>strong{font-size:14px;color:#416b8b}.demo-panel .example-actions{margin-top:10px}.demo-panel select{min-width:0;flex:1;font-size:13px}.demo-panel .button{font-size:13px;flex-shrink:0}
+@media(max-width:1050px){.app-header nav button{padding-left:12px;padding-right:12px}.upload-support{grid-template-columns:1fr}.demo-panel{border-left:0;border-top:1px solid #cbdfea;padding:18px 0 0}.demo-panel .example-actions{width:100%}}
+@media(max-width:760px){body[data-current-view="documents"] .title-row{min-height:0;padding:22px}body[data-current-view="documents"] .title-row h1{font-size:28px}body[data-current-view="documents"] .title-row p{font-size:15px}.app-header nav{gap:3px}.app-header nav button{font-size:12px;padding:0 6px}.app-header nav .step-number{width:19px;height:19px;font-size:10px;margin-right:3px}.upload-options h2{font-size:21px}.upload-heading{padding:18px}.dropzone{margin:0 18px 18px}.run-panel #upload-status{font-size:14px}.upload-support{gap:14px}.demo-panel .example-actions{flex-wrap:wrap}.demo-panel select{flex-basis:100%;width:100%}}
