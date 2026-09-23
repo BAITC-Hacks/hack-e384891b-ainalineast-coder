@@ -1,0 +1,2 @@
+# Optional for text-based PDFs; tested version.
+pypdf==6.10.0
