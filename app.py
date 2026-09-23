@@ -2,7 +2,7 @@
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
-import base64, importlib.util, json, os, time, traceback
+import base64, importlib.util, json, os, time, traceback, re, uuid
 import backend
 
 ROOT = Path(__file__).resolve().parent
@@ -50,6 +50,17 @@ class Handler(BaseHTTPRequestHandler):
                 except FileNotFoundError:
                     self.reply({"error":"Демонстрационные документы отсутствуют в data."},500)
             return
+        if re.fullmatch(r"/exports/[a-f0-9]{12}\.(html|json|csv)",parsed.path):
+            file=ROOT/parsed.path.lstrip("/")
+            if not file.is_file():
+                self.reply({"error":"Файл экспорта не найден"},404);return
+            body=file.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type",{"html":"text/html; charset=utf-8","json":"application/json; charset=utf-8","csv":"text/csv; charset=utf-8"}[file.suffix[1:]])
+            self.send_header("Content-Disposition",'attachment; filename="OrgLens-report'+file.suffix+'"')
+            self.send_header("Content-Security-Policy","sandbox; default-src 'none'; style-src 'unsafe-inline'")
+            self.send_header("Content-Length",str(len(body)))
+            self.end_headers();self.wfile.write(body);return
         files={"/":"index.html","/index.html":"index.html","/app.js":"app.js","/styles.css":"styles.css"}
         if parsed.path not in files:
             self.reply({"error":"Не найдено"},404)
@@ -95,6 +106,16 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception as exc:
                         output.append({"name":name,"error":str(exc),"text":"","warnings":[]})
                 self.reply({"files":output})
+            elif self.path=="/api/export":
+                extension=str(payload.get("extension",""))
+                content=payload.get("content")
+                if extension not in ("html","json","csv") or not isinstance(content,str) or len(content)>20_000_000:
+                    raise ValueError("Неверный формат или размер экспорта")
+                folder=ROOT/"exports"
+                folder.mkdir(exist_ok=True)
+                file=folder/(uuid.uuid4().hex[:12]+"."+extension)
+                file.write_text(content,encoding="utf-8")
+                self.reply({"href":"/exports/"+file.name,"path":str(file),"name":file.name})
             elif self.path=="/api/analyze":
                 for side in ("before","after"):
                     docs=payload.get(side)

@@ -1,6 +1,10 @@
 import base64, io, json, threading, unittest, urllib.request, urllib.error, zipfile
 from http.server import ThreadingHTTPServer
 import backend
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
+import app
 from app import Handler, CONTROL
 class IntegrationTests(unittest.TestCase):
     @classmethod
@@ -35,6 +39,20 @@ class IntegrationTests(unittest.TestCase):
     def test_static_server_does_not_publish_source(self):
         with self.assertRaises(urllib.error.HTTPError) as cm: urllib.request.urlopen(self.url+"/backend.py")
         self.assertEqual(cm.exception.code,404)
+    def test_export_is_saved_and_downloadable(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(app,"ROOT",Path(folder)):
+            result=self.post("/api/export",{"extension":"html","content":"<!doctype html><p>Verified evidence report</p>"})
+            file=Path(result["path"])
+            self.assertEqual(file.parent,Path(folder)/"exports")
+            self.assertTrue(file.is_file())
+            with urllib.request.urlopen(self.url+result["href"]) as res:
+                self.assertIn("attachment",res.headers["Content-Disposition"])
+                self.assertIn("sandbox",res.headers["Content-Security-Policy"])
+                self.assertIn(b"Verified evidence report",res.read())
+    def test_export_rejects_path_like_extension(self):
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            self.post("/api/export",{"extension":"../../app.py","content":"bad"})
+        self.assertEqual(cm.exception.code,400)
     def test_xlsx_values(self):
         data=io.BytesIO()
         with zipfile.ZipFile(data,"w") as z:

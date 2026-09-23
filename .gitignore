@@ -3,3 +3,6 @@ __pycache__/
 .venv/
 .env
 work/
+exports/
+validation/*-analysis.json
+_ui_patch.py
