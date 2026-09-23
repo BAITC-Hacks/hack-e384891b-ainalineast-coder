@@ -4,6 +4,9 @@
 |---|---|---|
 | Python 3 и стандартная библиотека | HTTP, JSON, ZIP/XML, CSV, алгоритмы, тесты | Python Software Foundation License |
 | pypdf 6.10.0, необязательно | Извлечение текстового слоя PDF | BSD-3-Clause; лицензия входит в пакет |
+| python-docx 1.2.0 | Экспорт Word | MIT; лицензия входит в пакет |
+| reportlab 4.4.9 | Экспорт PDF | BSD; лицензия входит в пакет |
+| fontTools 4.59.0, только при сборке шрифтов | Статические начертания Roboto для PDF | MIT; не нужен при запуске |
 | Ollama, необязательно | Локальное исполнение модели | MIT; устанавливается отдельно |
 | Модель Ollama, необязательно | Предложение семантических соответствий | Зависит от выбранной модели, веса не включены |
 | HTML, CSS, JavaScript | Собственный интерфейс | Внешние UI-библиотеки и шаблоны не использованы |
@@ -19,3 +22,5 @@ Ollama и веса моделей не распространяются с пр�
 
 ## Шрифт Roboto
 В комплект добавлен оригинальный Roboto variable из google/fonts, Roboto Project Authors, SIL Open Font License 1.1. Файл лицензии: assets/Roboto-OFL.txt. Источник: https://github.com/google/fonts/tree/main/ofl/roboto . Корпоративная палитра сверена с официальным telecom.kz; логотип компании не копируется.
+
+Для PDF из Roboto variable получены статические начертания Regular и Bold (assets/Roboto-Regular.ttf, assets/Roboto-Bold.ttf), распространяемые по той же SIL OFL 1.1. Генератор XLSX написан для проекта на стандартной библиотеке Python; внешняя библиотека генерации таблиц не требуется.

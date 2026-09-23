@@ -1,2 +1,4 @@
-# Optional for text-based PDFs; tested version.
+# PDF import and Word/PDF export. Comparison, HTML, CSV, JSON and XLSX use stdlib.
 pypdf==6.10.0
+python-docx==1.2.0
+reportlab==4.4.9

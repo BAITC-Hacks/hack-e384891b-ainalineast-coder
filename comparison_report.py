@@ -6,7 +6,7 @@ def render_comparison(analysis):
     labels={"unchanged":"Без изменений","changed":"Изменён","added":"Добавлен","removed":"Удалён","moved":"Перенумерован / перенесён"}
     def cell(clause,parts,side):
         if not clause:
-            return '<span class="absence">— '+("В документе 1 этого пункта нет" if side=="before" else "В документе 2 этот пункт отсутствует")+'</span>'
+            return '<span class="absence">— '+"Данный пункт в документе отсутствует."+'</span>'
         text=""
         for p in parts or [{"text":clause["text"],"kind":"equal"}]:
             value=esc(p["text"])

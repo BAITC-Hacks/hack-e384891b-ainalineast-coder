@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-23T10:49:07.107999+00:00",
+  "generatedAt": "2026-09-23T11:41:25.394963+00:00",
   "python": "3.12.14",
   "platform": "Windows",
   "testsPassed": true,
   "llmLiveTested": false,
   "cases": {
     "audit": {
-      "elapsedMs": 1927,
+      "elapsedMs": 1914,
       "stats": {
         "preserved": 317,
         "modified": 32,
@@ -21,7 +21,7 @@
         "duplicates": 4,
         "conflicts": 1,
         "changes": 3,
-        "durationMs": 1926
+        "durationMs": 1914
       },
       "evidenceReferencesValid": true,
       "comparisonStats": {

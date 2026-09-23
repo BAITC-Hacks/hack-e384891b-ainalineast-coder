@@ -4,6 +4,7 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import base64, importlib.util, json, os, time, traceback, re, uuid
 import backend
+from export_api import export_document, FORMATS
 
 ROOT = Path(__file__).resolve().parent
 MAX_BODY = 35 * 1024 * 1024
@@ -50,13 +51,13 @@ class Handler(BaseHTTPRequestHandler):
                 except FileNotFoundError:
                     self.reply({"error":"Демонстрационные документы отсутствуют в data."},500)
             return
-        if re.fullmatch(r"/exports/[a-f0-9]{12}\.(html|json|csv)",parsed.path):
+        if re.fullmatch(r"/exports/[a-f0-9]{12}\.(html|json|csv|docx|xlsx|pdf)",parsed.path):
             file=ROOT/parsed.path.lstrip("/")
             if not file.is_file():
                 self.reply({"error":"Файл экспорта не найден"},404);return
             body=file.read_bytes()
             self.send_response(200)
-            self.send_header("Content-Type",{"html":"text/html; charset=utf-8","json":"application/json; charset=utf-8","csv":"text/csv; charset=utf-8"}[file.suffix[1:]])
+            self.send_header("Content-Type",{"html":"text/html; charset=utf-8","json":"application/json; charset=utf-8","csv":"text/csv; charset=utf-8",**FORMATS}[file.suffix[1:]])
             self.send_header("Content-Disposition",'attachment; filename="Versa-report'+file.suffix+'"')
             self.send_header("Content-Security-Policy","sandbox; default-src 'none'; style-src 'unsafe-inline'")
             self.send_header("Content-Length",str(len(body)))
@@ -116,6 +117,13 @@ class Handler(BaseHTTPRequestHandler):
                 file=folder/(uuid.uuid4().hex[:12]+"."+extension)
                 file.write_text(content,encoding="utf-8")
                 self.reply({"href":"/exports/"+file.name,"path":str(file),"name":file.name})
+            elif self.path=="/api/export-document":
+                extension=str(payload.get("extension",""))
+                content=export_document(payload.get("analysis"),extension)
+                folder=ROOT/"exports"; folder.mkdir(exist_ok=True)
+                file=folder/(uuid.uuid4().hex[:12]+"."+extension)
+                file.write_bytes(content)
+                self.reply({"href":"/exports/"+file.name,"path":str(file),"name":file.name})
             elif self.path=="/api/analyze":
                 for side in ("before","after"):
                     docs=payload.get(side)
@@ -128,6 +136,8 @@ class Handler(BaseHTTPRequestHandler):
                 result["elapsedMs"]=round((time.perf_counter()-started)*1000)
                 self.reply(result)
             else: self.reply({"error":"Не найдено"},404)
+        except ModuleNotFoundError:
+            self.reply({"error":"Для Word/PDF установите зависимости: python -m pip install -r requirements.txt"},503)
         except (ValueError,TypeError,KeyError) as exc:
             self.reply({"error":str(exc)},400)
         except Exception:

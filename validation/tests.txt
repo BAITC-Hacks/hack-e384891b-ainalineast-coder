@@ -1,15 +1,22 @@
 
-AUDIT_DIAGNOSTIC={"stats": {"preserved": 317, "modified": 32, "moved": 36, "missing": 3, "beforeFunctions": 388, "afterFunctions": 382, "documents": 2, "units": 5, "findings": 11, "losses": 3, "duplicates": 4, "conflicts": 1, "changes": 3, "durationMs": 1915}, "engine": {"name": "Versa Evidence Engine", "mode": "offline", "llmUsed": false, "llmRequested": false, "refinedPairs": 0, "version": "1.0", "description": "Автономный алгоритм сопоставления текста"}, "units": [{"name": "Блок внутреннего аудита", "status": "retained"}, {"name": "ДНМ", "status": "retained"}, {"name": "ДККМ", "status": "retained"}, {"name": "ДИТААД", "status": "created"}, {"name": "ДОА", "status": "created"}], "specialMappings": [{"before": "5.4.4.а", "after": "5.3.3.а", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.4.4.б", "after": "5.3.3.б", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.6.2", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.2792}, {"before": "5.6.3", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.3942}, {"before": "9.15", "after": "9.15", "from": "Блок внутреннего аудита", "to": "Блок внутреннего аудита", "status": "modified", "score": 0.861}], "findings": [{"type": "loss", "title": "Не найдено закрепление: формировать группы контроля качества с привлечением работников БВА в соотве…", "refs": ["5.6.2"]}, {"type": "loss", "title": "Не найдено закрепление: выносить предложения по объему и содержанию внешней оценки БВА Главному ауд…", "refs": ["5.6.3"]}, {"type": "loss", "title": "Не найдено закрепление: доводить до сведения Руководителей Общества результаты по запросу оказания…", "refs": ["5.7.2"]}, {"type": "change", "title": "Изменена обязательность или запрет", "refs": ["9.15", "9.15"]}, {"type": "change", "title": "Новое закрепление подразделения", "refs": ["3.4.а", "5.3.2.а"]}, {"type": "change", "title": "Новое закрепление подразделения", "refs": ["3.4.б", "5.3.2.б"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.1.4", "5.5.5"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.3.6", "5.4.3"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.3.12", "5.4.9"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.5.2", "10.5.б"]}, {"type": "conflict", "title": "Совмещение участия в управлении и внутреннего аудита", "refs": ["4.4", "1.3", "4.4.а", "4.4.б"]}]}
+AUDIT_DIAGNOSTIC={"stats": {"preserved": 317, "modified": 32, "moved": 36, "missing": 3, "beforeFunctions": 388, "afterFunctions": 382, "documents": 2, "units": 5, "findings": 11, "losses": 3, "duplicates": 4, "conflicts": 1, "changes": 3, "durationMs": 1942}, "engine": {"name": "Versa Evidence Engine", "mode": "offline", "llmUsed": false, "llmRequested": false, "refinedPairs": 0, "version": "1.0", "description": "Автономный алгоритм сопоставления текста"}, "units": [{"name": "Блок внутреннего аудита", "status": "retained"}, {"name": "ДНМ", "status": "retained"}, {"name": "ДККМ", "status": "retained"}, {"name": "ДИТААД", "status": "created"}, {"name": "ДОА", "status": "created"}], "specialMappings": [{"before": "5.4.4.а", "after": "5.3.3.а", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.4.4.б", "after": "5.3.3.б", "from": "ДНМ", "to": "ДИТААД / ДОА", "status": "moved", "score": 1.0}, {"before": "5.6.2", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.2792}, {"before": "5.6.3", "after": null, "from": "ДККМ", "to": null, "status": "missing", "score": 0.3942}, {"before": "9.15", "after": "9.15", "from": "Блок внутреннего аудита", "to": "Блок внутреннего аудита", "status": "modified", "score": 0.861}], "findings": [{"type": "loss", "title": "Не найдено закрепление: формировать группы контроля качества с привлечением работников БВА в соотве…", "refs": ["5.6.2"]}, {"type": "loss", "title": "Не найдено закрепление: выносить предложения по объему и содержанию внешней оценки БВА Главному ауд…", "refs": ["5.6.3"]}, {"type": "loss", "title": "Не найдено закрепление: доводить до сведения Руководителей Общества результаты по запросу оказания…", "refs": ["5.7.2"]}, {"type": "change", "title": "Изменена обязательность или запрет", "refs": ["9.15", "9.15"]}, {"type": "change", "title": "Новое закрепление подразделения", "refs": ["3.4.а", "5.3.2.а"]}, {"type": "change", "title": "Новое закрепление подразделения", "refs": ["3.4.б", "5.3.2.б"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.1.4", "5.5.5"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.3.6", "5.4.3"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.3.12", "5.4.9"]}, {"type": "duplicate", "title": "Возможное пересечение ответственности", "refs": ["5.5.2", "10.5.б"]}, {"type": "conflict", "title": "Совмещение участия в управлении и внутреннего аудита", "refs": ["4.4", "1.3", "4.4.а", "4.4.б"]}]}
 
-CONTROL_DIAGNOSTIC={"stats": {"preserved": 2, "modified": 0, "moved": 1, "missing": 1, "beforeFunctions": 4, "afterFunctions": 5, "documents": 3, "units": 2, "findings": 4, "losses": 1, "duplicates": 1, "conflicts": 1, "changes": 1, "durationMs": 2}, "findings": [{"type": "loss", "refs": ["1.4"]}, {"type": "change", "refs": ["3.1", "3.2"]}, {"type": "duplicate", "refs": ["2.1", "3.1"]}, {"type": "conflict", "refs": ["2.2", "2.3"]}]}
-15:49:06 "POST /api/export HTTP/1.1" 200 -
-15:49:06 "GET /exports/963bf8d842f7.html HTTP/1.1" 200 -
-15:49:06 "POST /api/export HTTP/1.1" 400 -
-15:49:06 "POST /api/extract HTTP/1.1" 200 -
-15:49:06 "POST /api/analyze HTTP/1.1" 200 -
-15:49:06 "POST /api/analyze HTTP/1.1" 403 -
-15:49:06 "POST /api/analyze HTTP/1.1" 400 -
-15:49:06 "GET /backend.py HTTP/1.1" 404 -
+CONTROL_DIAGNOSTIC={"stats": {"preserved": 2, "modified": 0, "moved": 1, "missing": 1, "beforeFunctions": 4, "afterFunctions": 5, "documents": 3, "units": 2, "findings": 4, "losses": 1, "duplicates": 1, "conflicts": 1, "changes": 1, "durationMs": 3}, "findings": [{"type": "loss", "refs": ["1.4"]}, {"type": "change", "refs": ["3.1", "3.2"]}, {"type": "duplicate", "refs": ["2.1", "3.1"]}, {"type": "conflict", "refs": ["2.2", "2.3"]}]}
+16:41:22 "POST /api/export-document HTTP/1.1" 200 -
+16:41:23 "GET /exports/172a680825fb.docx HTTP/1.1" 200 -
+16:41:23 "POST /api/export-document HTTP/1.1" 200 -
+16:41:23 "GET /exports/ed6aebbd9a7b.xlsx HTTP/1.1" 200 -
+16:41:23 "POST /api/export-document HTTP/1.1" 200 -
+16:41:23 "GET /exports/4c93df9bc4b4.pdf HTTP/1.1" 200 -
+16:41:23 "POST /api/export-document HTTP/1.1" 400 -
+16:41:24 "POST /api/export HTTP/1.1" 200 -
+16:41:24 "GET /exports/659cfd17355f.html HTTP/1.1" 200 -
+16:41:24 "POST /api/export HTTP/1.1" 400 -
+16:41:24 "POST /api/extract HTTP/1.1" 200 -
+16:41:24 "POST /api/analyze HTTP/1.1" 200 -
+16:41:24 "POST /api/analyze HTTP/1.1" 403 -
+16:41:24 "POST /api/analyze HTTP/1.1" 400 -
+16:41:24 "GET /backend.py HTTP/1.1" 404 -
 test_distinct_owners_duplicate (tests_backend.ComparisonTests.test_distinct_owners_duplicate) ... ok
 test_empty_input_is_rejected (tests_backend.ComparisonTests.test_empty_input_is_rejected) ... ok
 test_evidence_integrity_and_no_implicit_llm (tests_backend.ComparisonTests.test_evidence_integrity_and_no_implicit_llm) ... ok
@@ -43,6 +50,14 @@ test_report_preserves_diff_and_escapes_input (tests_comparison.CompleteCompariso
 test_same_ref_entire_rewrite (tests_comparison.CompleteComparisonTests.test_same_ref_entire_rewrite) ... ok
 test_toc_does_not_hide_following_body (tests_comparison.CompleteComparisonTests.test_toc_does_not_hide_following_body) ... ok
 test_version_and_date_are_aligned (tests_comparison.CompleteComparisonTests.test_version_and_date_are_aligned) ... ok
+test_download_new_formats_with_correct_mime (tests_exports.BinaryExportHTTPTests.test_download_new_formats_with_correct_mime) ... ok
+test_rejects_invalid_payload (tests_exports.BinaryExportHTTPTests.test_rejects_invalid_payload) ... ok
+test_docx_is_editable_complete_table_with_redlines (tests_exports.ExportTests.test_docx_is_editable_complete_table_with_redlines) ... ok
+test_pdf_unicode_changes_and_distinct_bold_font (tests_exports.ExportTests.test_pdf_unicode_changes_and_distinct_bold_font) ... ok
+test_rejects_forged_diff_and_format (tests_exports.ExportTests.test_rejects_forged_diff_and_format) ... ok
+test_xlsx_does_not_create_formulas (tests_exports.ExportTests.test_xlsx_does_not_create_formulas) ... ok
+test_xlsx_keeps_very_long_cells_and_linebreaks (tests_exports.ExportTests.test_xlsx_keeps_very_long_cells_and_linebreaks) ... ok
+test_xlsx_three_columns_freeze_and_rich_red (tests_exports.ExportTests.test_xlsx_three_columns_freeze_and_rich_red) ... ok
 test_csv_utf8 (tests_integration.IntegrationTests.test_csv_utf8) ... ok
 test_export_is_saved_and_downloadable (tests_integration.IntegrationTests.test_export_is_saved_and_downloadable) ... ok
 test_export_rejects_path_like_extension (tests_integration.IntegrationTests.test_export_rejects_path_like_extension) ... ok
@@ -55,6 +70,6 @@ test_static_server_does_not_publish_source (tests_integration.IntegrationTests.t
 test_xlsx_values (tests_integration.IntegrationTests.test_xlsx_values) ... ok
 
 ----------------------------------------------------------------------
-Ran 43 tests in 3.132s
+Ran 51 tests in 6.516s
 
 OK
