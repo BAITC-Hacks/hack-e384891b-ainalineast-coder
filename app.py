@@ -1,4 +1,4 @@
-"""OrgLens: local evidence-first organizational analysis workbench."""
+"""Versa: local evidence-first organizational analysis workbench."""
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -19,7 +19,7 @@ CONTROL = {
 }
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "OrgLens/1.0"
+    server_version = "Versa/1.0"
     def log_message(self, fmt, *args):
         # Never log document contents.
         print(time.strftime("%H:%M:%S"), fmt % args)
@@ -57,11 +57,11 @@ class Handler(BaseHTTPRequestHandler):
             body=file.read_bytes()
             self.send_response(200)
             self.send_header("Content-Type",{"html":"text/html; charset=utf-8","json":"application/json; charset=utf-8","csv":"text/csv; charset=utf-8"}[file.suffix[1:]])
-            self.send_header("Content-Disposition",'attachment; filename="OrgLens-report'+file.suffix+'"')
+            self.send_header("Content-Disposition",'attachment; filename="Versa-report'+file.suffix+'"')
             self.send_header("Content-Security-Policy","sandbox; default-src 'none'; style-src 'unsafe-inline'")
             self.send_header("Content-Length",str(len(body)))
             self.end_headers();self.wfile.write(body);return
-        files={"/":"index.html","/index.html":"index.html","/app.js":"app.js","/styles.css":"styles.css"}
+        files={"/":"index.html","/index.html":"index.html","/app.js":"app.js","/styles.css":"styles.css","/assets/Roboto.ttf":"assets/Roboto.ttf"}
         if parsed.path not in files:
             self.reply({"error":"Не найдено"},404)
             return
@@ -70,7 +70,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply({"error":"Ресурс отсутствует"},404); return
         body=file.read_bytes()
         self.send_response(200)
-        self.send_header("Content-Type",{"html":"text/html; charset=utf-8","js":"text/javascript; charset=utf-8","css":"text/css; charset=utf-8"}[file.suffix[1:]])
+        self.send_header("Content-Type",{"html":"text/html; charset=utf-8","js":"text/javascript; charset=utf-8","css":"text/css; charset=utf-8","ttf":"font/ttf"}[file.suffix[1:]])
         self.send_header("Content-Length",str(len(body)))
         self.send_header("Cache-Control","no-cache")
         self.send_header("X-Content-Type-Options","nosniff")
@@ -135,9 +135,9 @@ class Handler(BaseHTTPRequestHandler):
             self.reply({"error":"Ошибка анализа. Подробности доступны в локальном терминале."},500)
 
 def main():
-    port=int(os.getenv("ORGLENS_PORT","8765"))
+    port=int(os.getenv("VERSA_PORT",os.getenv("ORGLENS_PORT","8765")))
     server=ThreadingHTTPServer(("127.0.0.1",port),Handler)
-    print(f"OrgLens is ready: http://127.0.0.1:{port}",flush=True)
+    print(f"Versa is ready: http://127.0.0.1:{port}",flush=True)
     print("Documents stay local. Ctrl+C to stop.",flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-23T09:55:13.258677+00:00",
+  "generatedAt": "2026-09-23T10:49:07.107999+00:00",
   "python": "3.12.14",
   "platform": "Windows",
   "testsPassed": true,
   "llmLiveTested": false,
   "cases": {
     "audit": {
-      "elapsedMs": 1641,
+      "elapsedMs": 1927,
       "stats": {
         "preserved": 317,
         "modified": 32,
@@ -21,12 +21,20 @@
         "duplicates": 4,
         "conflicts": 1,
         "changes": 3,
-        "durationMs": 1641
+        "durationMs": 1926
       },
-      "evidenceReferencesValid": true
+      "evidenceReferencesValid": true,
+      "comparisonStats": {
+        "unchanged": 326,
+        "changed": 72,
+        "added": 19,
+        "removed": 20,
+        "moved": 70,
+        "total": 507
+      }
     },
     "control": {
-      "elapsedMs": 3,
+      "elapsedMs": 4,
       "stats": {
         "preserved": 2,
         "modified": 0,
@@ -43,7 +51,15 @@
         "changes": 1,
         "durationMs": 3
       },
-      "evidenceReferencesValid": true
+      "evidenceReferencesValid": true,
+      "comparisonStats": {
+        "unchanged": 1,
+        "changed": 0,
+        "added": 4,
+        "removed": 2,
+        "moved": 2,
+        "total": 9
+      }
     }
   }
 }

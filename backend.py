@@ -416,6 +416,8 @@ def _ollama_refine(mappings, before, after, settings, warnings, trace):
         trace.append({"step": "Локальная модель", "status": "warning", "detail": f"Автономный режим сохранён: {type(exc).__name__}."})
         return False, 0
 
+from comparison import compare_documents
+
 def analyze(payload):
     started = time.perf_counter()
     if not isinstance(payload, dict):
@@ -428,7 +430,7 @@ def analyze(payload):
     documents = [parse_document(item, side, i) for side in ("before","after") for i,item in enumerate(payload[side])]
     if sum(len(d["clauses"]) for d in documents) > MAX_CLAUSES:
         raise ValueError("Слишком много пунктов для прототипа (лимит 1800). Разделите комплект.")
-    if any(not d["clauses"] for d in documents):
+    if any(not str(item.get("text", "")).strip() for side in ("before", "after") for item in payload[side]):
         raise ValueError("Один из документов не содержит распознаваемого текста.")
     warnings = ["Выводы рекомендательные. Отсутствие соответствия в загруженном комплекте не доказывает фактическую потерю функции.",
                 "Автономное сопоставление использует нормализацию, основы слов и сходство текста. Числовой score — сходство, не вероятность правильности."]
@@ -495,16 +497,17 @@ def analyze(payload):
         warnings.append("В тексте встречаются ссылки на приложения. Убедитесь, что сами приложения загружены; их содержание нельзя восстановить по названию.")
     trace.append({"step":"Проверка отклонений","status":"done","detail":"Проверены кандидаты потери, пересечения разных владельцев, совмещение исполнения и контроля, отрицания и обязательность."})
     trace.append({"step":"Проверка доказательств","status":"done","detail":f"Все {len(findings)} выводов содержат ссылки на извлечённые фрагменты. Решение остаётся за экспертом."})
+    comparison = compare_documents(payload)
     counts = {status:sum(m["status"]==status for m in mappings) for status in ("preserved","modified","moved","missing")}
     stats = {**counts,"beforeFunctions":len(before),"afterFunctions":len(after),"documents":len(documents),"units":len(units),
              "findings":len(findings),"losses":sum(f["type"]=="loss" for f in findings),
              "duplicates":sum(f["type"]=="duplicate" for f in findings),"conflicts":sum(f["type"]=="conflict" for f in findings),
              "changes":sum(f["type"]=="change" for f in findings),"durationMs":round((time.perf_counter()-started)*1000)}
     return {"id":str(uuid.uuid4()),"generatedAt":datetime.now(timezone.utc).isoformat(),
-            "engine":{"name":"OrgLens Evidence Engine","mode":"local-llm" if llm_used else "offline","llmUsed":llm_used,
+            "engine":{"name":"Versa Evidence Engine","mode":"local-llm" if llm_used else "offline","llmUsed":llm_used,
                       "llmRequested":payload.get("llm") is True,"refinedPairs":refined,"version":"1.0",
                       "description":"Локальная LLM + проверка ссылок" if llm_used else "Автономный алгоритм сопоставления текста"},
-            "stats":stats,"documents":documents,"units":units,"mappings":mappings,"findings":findings,
+            "comparison":comparison,"stats":stats,"documents":documents,"units":units,"mappings":mappings,"findings":findings,
             "warnings":warnings,"trace":trace}
 
 
